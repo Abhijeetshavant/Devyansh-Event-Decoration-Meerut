@@ -1,13 +1,13 @@
 import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./pages/Navbar";
 import Hero from "./pages/Hero";
 import MainHero from "./pages/MainHero";
 import About from "./pages/About";
 import NavAbout from "./pages/NavAbout";
 import Card from "./pages/Card";
-import Service from "./pages/services";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Services from "./pages/services";
+
+import Services from "./pages/Services";
 import Footer from "./pages/Footer";
 const App = () => {
   return (
