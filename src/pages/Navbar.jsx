@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FaWhatsapp,
   FaPhoneAlt,
@@ -6,19 +7,43 @@ import {
   FaTimes,
   FaGift,
   FaInfoCircle,
+  FaUserCircle,
+  FaShoppingCart,
+  FaUser,
+  FaBuilding,
+  FaSignOutAlt,
+  FaChevronDown,
 } from "react-icons/fa";
 import logo from "../assets/logo.png";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [accountDropdown, setAccountDropdown] = useState(false);
+  const [shoppingDropdown, setShoppingDropdown] = useState(false);
+  const accountRef = useRef(null);
+  const shoppingRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    // Close dropdowns when clicking outside
+    const handleClickOutside = (event) => {
+      if (accountRef.current && !accountRef.current.contains(event.target)) {
+        setAccountDropdown(false);
+      }
+      if (shoppingRef.current && !shoppingRef.current.contains(event.target)) {
+        setShoppingDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   const handleCall = () => {
@@ -28,9 +53,50 @@ const Navbar = () => {
   const handleWhatsApp = () => {
     const phoneNumber = "916396028950";
     const message = "Hi, I want to book event decoration services in Meerut.";
-    const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    window.open(url, "_blank");
+    window.open(
+      `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`,
+      "_blank",
+    );
   };
+
+  const handleUserLogin = () => {
+    setAccountDropdown(false);
+    setIsOpen(false);
+    navigate("/user/login");
+  };
+
+  const handleUserRegister = () => {
+    setAccountDropdown(false);
+    setIsOpen(false);
+    navigate("/user/register");
+  };
+
+  const handleBusinessLogin = () => {
+    setAccountDropdown(false);
+    setIsOpen(false);
+    navigate("/admin/login");
+  };
+
+  const handleBusinessRegister = () => {
+    setAccountDropdown(false);
+    setIsOpen(false);
+    navigate("/admin/register");
+  };
+
+  const handleLogout = () => {
+    setAccountDropdown(false);
+    setIsOpen(false);
+    navigate("/logout");
+  };
+
+  const handleOrderDashboard = () => {
+    setShoppingDropdown(false);
+    setIsOpen(false);
+    navigate("/user/OrderDashbord");
+  };
+
+  // Check if user is logged in (you can replace this with actual auth logic)
+  const isLoggedIn = false; // Change this based on your auth state
 
   const navItems = [
     { name: "Services", icon: <FaGift />, href: "/services" },
@@ -38,142 +104,271 @@ const Navbar = () => {
   ];
 
   return (
-    <>
-      {/* Main Navigation Bar */}
-      <nav
-        className={`sticky top-0 z-50 w-full transition-all duration-300 ${scrolled ? "bg-white shadow-lg py-2" : "bg-white shadow-sm py-3"}`}
-      >
-        <div className="w-full px-4">
-          <div className="flex items-center justify-between">
-            {/* Logo & Brand */}
-            <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-              <img
-                src={logo}
-                alt="Meerut Event Hub Logo"
-                className={`transition-all duration-300 ${scrolled ? "w-10 h-10" : "w-12 h-12"}`}
-              />
-              <div className="hidden sm:block">
-                <h1 className="text-lg font-bold text-gray-900 whitespace-nowrap">
-                  Meerut Event Hub
-                </h1>
-                <p
-                  className={`text-xs text-gray-500 transition-all duration-300 ${scrolled ? "h-0 opacity-0 overflow-hidden" : "h-auto opacity-100"}`}
+    <nav
+      className={`sticky top-0 z-50 w-full transition-all duration-300
+        ${scrolled ? "bg-white shadow-md" : "bg-white"}
+      `}
+    >
+      <div className="px-4 py-3 md:py-2 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-3">
+            <img
+              src={logo}
+              alt="Meerut Event Hub"
+              className="w-12 h-12 md:w-10 md:h-10"
+            />
+            <div>
+              <h1 className="text-lg md:text-base font-bold text-gray-900">
+                Meerut Event Hub
+              </h1>
+              <p className="text-sm md:text-xs text-gray-500">
+                Creating Unforgettable Moments
+              </p>
+            </div>
+          </Link>
+
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center gap-6">
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className="flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium"
+              >
+                <span className="text-blue-500">{item.icon}</span>
+                {item.name}
+              </Link>
+            ))}
+
+            {/* Shopping Dropdown */}
+            <div className="relative" ref={shoppingRef}>
+              <button
+                onClick={() => setShoppingDropdown(!shoppingDropdown)}
+                className="flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium"
+              >
+                <span className="text-blue-500">
+                  <FaShoppingCart />
+                </span>
+                Shopping
+                <FaChevronDown className="text-xs" />
+              </button>
+
+              {shoppingDropdown && (
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 border">
+                  <button
+                    onClick={handleOrderDashboard}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-blue-50 text-gray-700"
+                  >
+                    <FaShoppingCart className="text-blue-500" />
+                    Order Dashboard
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Account Dropdown */}
+            <div className="relative" ref={accountRef}>
+              <button
+                onClick={() => setAccountDropdown(!accountDropdown)}
+                className="flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium"
+              >
+                <span className="text-blue-500">
+                  <FaUserCircle />
+                </span>
+                Account
+                <FaChevronDown className="text-xs" />
+              </button>
+
+              {accountDropdown && (
+                <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-2 z-50 border">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-red-50 text-red-600 font-medium"
+                  >
+                    <FaSignOutAlt />
+                    Logout
+                  </button>
+
+                  <>
+                    <button
+                      onClick={handleUserLogin}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-blue-50 text-gray-700"
+                    >
+                      <FaUser className="text-blue-500" />
+                      User Login
+                    </button>
+                    <button
+                      onClick={handleUserRegister}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-blue-50 text-gray-700"
+                    >
+                      <FaUser className="text-blue-500" />
+                      User Register
+                    </button>
+
+                    <div className="border-t my-1"></div>
+
+                    <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      Business Account
+                    </div>
+                    <button
+                      onClick={handleBusinessLogin}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-blue-50 text-gray-700"
+                    >
+                      <FaBuilding className="text-green-500" />
+                      Business Login
+                    </button>
+                    <button
+                      onClick={handleBusinessRegister}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-blue-50 text-gray-700"
+                    >
+                      <FaBuilding className="text-green-500" />
+                      Business Register
+                    </button>
+                  </>
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={handleCall}
+              className="flex items-center gap-2 px-4 py-2 rounded-full
+              border border-blue-600 text-blue-600 hover:bg-blue-50"
+            >
+              <FaPhoneAlt size={14} />
+              Call Now
+            </button>
+
+            <button
+              onClick={handleWhatsApp}
+              className="flex items-center gap-2 px-4 py-2 rounded-full
+              bg-green-600 text-white hover:bg-green-700"
+            >
+              <FaWhatsapp size={16} />
+              WhatsApp
+            </button>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden p-3 rounded-lg bg-gray-100"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            {isOpen ? <FaTimes size={22} /> : <FaBars size={22} />}
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        {isOpen && (
+          <div className="md:hidden mt-4 rounded-xl bg-white shadow-lg p-4 space-y-3">
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-4 px-4 py-4 rounded-lg
+                text-lg font-medium text-gray-800 hover:bg-blue-50"
+              >
+                <span className="text-blue-600 text-xl">{item.icon}</span>
+                {item.name}
+              </Link>
+            ))}
+
+            {/* Mobile Shopping */}
+            <div className="px-4 py-4">
+              <div className="font-medium text-gray-700 mb-2 flex items-center gap-3">
+                <FaShoppingCart className="text-blue-600 text-xl" />
+                Shopping
+              </div>
+              <div className="pl-7 space-y-2">
+                <button
+                  onClick={handleOrderDashboard}
+                  className="w-full text-left py-2 px-3 rounded-lg hover:bg-blue-50 text-gray-700"
                 >
-                  Creating Unforgettable Moments
-                </p>
+                  Order Dashboard
+                </button>
               </div>
             </div>
 
-            {/* Desktop Navigation Links */}
-            <div className="hidden md:flex items-center gap-6">
-              {navItems.map((item) => (
-                <a
-                  key={item.name}
-                  href={item.href}
-                  className="flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium transition-colors duration-300 group relative"
-                >
-                  <span className="text-blue-500">{item.icon}</span>
-                  {item.name}
-                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
-                </a>
-              ))}
+            {/* Mobile Account */}
+            <div className="px-4 py-4">
+              <div className="font-medium text-gray-700 mb-2 flex items-center gap-3">
+                <FaUserCircle className="text-blue-600 text-xl" />
+                Account
+              </div>
+              <div className="pl-7 space-y-2">
+                {isLoggedIn ? (
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left py-2 px-3 rounded-lg hover:bg-red-50 text-red-600 font-medium"
+                  >
+                    Logout
+                  </button>
+                ) : (
+                  <>
+                    <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2 mb-1">
+                      User Account
+                    </div>
+                    <button
+                      onClick={handleUserLogin}
+                      className="w-full flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-blue-50 text-gray-700"
+                    >
+                      <FaUser className="text-blue-500" />
+                      User Login
+                    </button>
+                    <button
+                      onClick={handleUserRegister}
+                      className="w-full flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-blue-50 text-gray-700"
+                    >
+                      <FaUser className="text-blue-500" />
+                      User Register
+                    </button>
+
+                    <div className="border-t my-2"></div>
+
+                    <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2 mb-1">
+                      Business Account
+                    </div>
+                    <button
+                      onClick={handleBusinessLogin}
+                      className="w-full flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-blue-50 text-gray-700"
+                    >
+                      <FaBuilding className="text-green-500" />
+                      Business Login
+                    </button>
+                    <button
+                      onClick={handleBusinessRegister}
+                      className="w-full flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-blue-50 text-gray-700"
+                    >
+                      <FaBuilding className="text-green-500" />
+                      Business Register
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
 
-            {/* Contact Buttons */}
-            <div className="flex items-center gap-2">
-              {/* Call Button - Desktop */}
+            <div className="pt-4 border-t space-y-3">
               <button
                 onClick={handleCall}
-                aria-label="Call"
-                className="hidden md:flex group relative items-center gap-2 px-4 py-2 
-                  rounded-full border border-blue-600 
-                  text-blue-600 hover:bg-blue-50 
-                  transition-all duration-300 hover:shadow-md"
+                className="w-full flex items-center justify-center gap-3
+                py-4 text-lg rounded-lg bg-blue-600 text-white"
               >
-                <FaPhoneAlt size={14} />
-                <span className="text-sm font-medium">Call Now</span>
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                <FaPhoneAlt /> Call Now
               </button>
 
-              {/* WhatsApp Button - Desktop */}
               <button
                 onClick={handleWhatsApp}
-                aria-label="WhatsApp"
-                className="hidden md:flex group items-center gap-2 px-4 py-2 
-                  rounded-full bg-gradient-to-r from-green-500 to-green-600 
-                  text-white hover:shadow-lg 
-                  transition-all duration-300 hover:scale-105"
+                className="w-full flex items-center justify-center gap-3
+                py-4 text-lg rounded-lg bg-green-600 text-white"
               >
-                <FaWhatsapp size={16} />
-                <span className="text-sm font-medium">WhatsApp</span>
-              </button>
-
-              {/* Mobile Menu Button */}
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="md:hidden p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
-                aria-label="Menu"
-              >
-                {isOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
+                <FaWhatsapp /> WhatsApp
               </button>
             </div>
           </div>
-
-          {/* Mobile Navigation Menu */}
-          {isOpen && (
-            <div className="md:hidden mt-4 pb-4 border-t pt-4">
-              <div className="flex flex-col gap-2 w-full">
-                {/* Navigation Items with Icons */}
-                {navItems.map((item) => (
-                  <a
-                    key={item.name}
-                    href={item.href}
-                    className="flex items-center gap-3 px-4 py-3 
-                      text-gray-700 hover:text-blue-600 hover:bg-blue-50 
-                      rounded-lg font-medium transition-all duration-300 w-full"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <span className="text-blue-500 text-lg">{item.icon}</span>
-                    <span className="text-base">{item.name}</span>
-                  </a>
-                ))}
-
-                {/* Mobile Call to Action Section */}
-                <div className="mt-2 p-4 bg-blue-50 rounded-lg w-full">
-                  <p className="text-sm text-gray-700 text-center mb-3">
-                    Get in touch with us for your event planning needs
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        handleCall();
-                        setIsOpen(false);
-                      }}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 
-                          rounded-lg bg-blue-600 text-white 
-                          hover:bg-blue-700 transition-colors duration-300"
-                    >
-                      <FaPhoneAlt /> Call Now
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleWhatsApp();
-                        setIsOpen(false);
-                      }}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 
-                          rounded-lg bg-green-600 text-white 
-                          hover:bg-green-700 transition-colors duration-300"
-                    >
-                      <FaWhatsapp /> WhatsApp
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </nav>
-    </>
+        )}
+      </div>
+    </nav>
   );
 };
 
